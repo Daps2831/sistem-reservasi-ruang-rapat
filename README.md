@@ -368,7 +368,6 @@ dengan berbagai macam kapasitas
 
 ---
 
-
 ---
 
 ### Alur Kerja dengan AI
@@ -396,6 +395,30 @@ dengan berbagai macam kapasitas
     ↓
 11. Final Review & Documentation
 ```
+
+---
+
+## 📸 Screenshot Aplikasi
+
+### Dashboard - Daftar Ruang Rapat
+Halaman utama yang menampilkan semua ruang rapat yang tersedia dengan informasi kapasitas dan jumlah reservasi. User dapat langsung membuat reservasi atau melihat jadwal detail.
+
+![Dashboard](screenshots/dashboard.png)
+
+### Modal Form Reservasi
+Form untuk membuat reservasi baru dengan validasi real-time. Sistem akan otomatis memvalidasi jam kerja (08:00-17:00) dan mencegah konflik jadwal.
+
+![Modal Reservasi](screenshots/modal-reservasi.png)
+
+### Detail Ruang Rapat - Jadwal Reservasi
+Halaman detail menampilkan semua jadwal reservasi yang sudah terbooking, dikelompokkan per tanggal. User dapat melihat siapa yang booking dan jam berapa saja.
+
+![Detail Room](screenshots/detail-room.png)
+
+### Riwayat Reservasi Pribadi
+Halaman yang menampilkan semua reservasi yang telah dibuat oleh user yang sedang login, dengan opsi untuk membatalkan reservasi yang akan datang.
+
+![Riwayat Reservasi](screenshots/riwayat-reservasi.png)
 
 ---
 
@@ -490,4 +513,189 @@ http://localhost:8000
 - ✅ Database Transaction & Locking
 - ✅ Password Hashing
 
+---
+
+## 🎯 Cara Penggunaan
+
+### 1. Registrasi & Login
+
+**Registrasi Akun Baru:**
+1. Akses halaman `/register`
+2. Isi form dengan nama, email, dan password
+3. Klik tombol "Daftar"
+4. Otomatis login dan redirect ke dashboard
+
+**Login:**
+1. Akses halaman `/login`
+2. Masukkan email dan password
+3. Optional: Centang "Ingat saya" untuk auto-login
+4. Klik tombol "Login"
+
+---
+
+### 2. Membuat Reservasi
+
+**Dari Dashboard:**
+1. Pilih ruang rapat yang diinginkan
+2. Klik tombol **"Buat Reservasi"** (biru)
+3. Modal form akan muncul
+4. Isi waktu mulai dan selesai
+5. (Opsional) Tambahkan catatan/agenda
+6. Klik **"Buat Reservasi"**
+
+**Validasi Otomatis:**
+- ⏰ Waktu harus dalam jam kerja (08:00-17:00)
+- 📅 Tidak boleh waktu lampau
+- ⏱️ Durasi minimal 30 menit, maksimal 8 jam
+- 🚫 Sistem akan tolak jika ada konflik jadwal
+
+**Dari Detail Room:**
+1. Klik tombol **"Lihat Jadwal Reservasi"** pada room card
+2. Periksa jadwal yang sudah ada
+3. Pilih waktu yang kosong
+4. Klik **"Buat Reservasi"** di pojok kanan atas
+5. Isi form dan submit
+
+---
+
+### 3. Melihat Jadwal Reservasi
+
+**Cara 1: Dari Dashboard**
+- Klik tombol **"Lihat Jadwal Reservasi"** (outline biru) pada room yang diinginkan
+- Akan muncul halaman detail dengan list semua reservasi
+
+**Cara 2: Dari Navbar**
+- Klik menu **"Dashboard"** untuk melihat semua ruangan
+- Pilih ruangan dan klik tombol lihat jadwal
+
+**Informasi yang Ditampilkan:**
+- 📅 Tanggal dan hari
+- ⏰ Rentang waktu (HH:MM - HH:MM)
+- 👤 Nama pemesan
+- 📝 Agenda/catatan rapat (jika ada)
+- 🏷️ Badge status:
+  - 🟢 Hijau "Reservasi Anda" - milik Anda
+  - 🔴 Merah "Tidak Tersedia" - milik orang lain
+
+---
+
+### 4. Melihat Riwayat Reservasi Pribadi
+
+1. Klik menu **"Reservasi Saya"** di navbar
+2. Akan tampil semua reservasi yang pernah Anda buat
+3. Diurutkan dari yang terbaru (created_at DESC)
+
+**Status Reservasi:**
+- ⏳ **Akan Datang** - Badge hijau, ada tombol "Batalkan"
+- ✅ **Selesai** - Badge abu-abu, tidak bisa dibatalkan
+
+---
+
+### 5. Membatalkan Reservasi
+
+**Syarat:**
+- ✅ Hanya pembuat reservasi yang bisa membatalkan
+- ✅ Hanya reservasi yang **akan datang** yang bisa dibatalkan
+- ❌ Reservasi yang sudah lewat tidak bisa dibatalkan
+
+**Cara:**
+1. Buka halaman **"Reservasi Saya"**
+2. Cari reservasi yang ingin dibatalkan
+3. Klik tombol **"Batalkan"** (merah)
+4. Konfirmasi pembatalan
+5. Reservasi akan dihapus dari sistem
+
+---
+
+### 6. Logout
+
+**Cara 1: Dari Navbar**
+- Klik tombol **"Logout"** (merah) di pojok kanan atas navbar
+
+**Keamanan:**
+- Session akan di-invalidate
+- Token CSRF akan di-regenerate
+- User akan redirect ke halaman login
+
+---
+
+## 🛡️ Fitur Keamanan
+
+### 1. Authentication & Authorization
+- **Laravel Sanctum**: Session-based authentication
+- **Policy Gates**: Authorization berbasis kepemilikan resource
+- **Middleware Auth**: Proteksi routes yang memerlukan login
+- **Password Hashing**: Menggunakan bcrypt dengan salt
+
+### 2. Database Security
+- **SQL Injection Prevention**: Eloquent ORM dengan prepared statements
+- **Mass Assignment Protection**: `$fillable` whitelist pada models
+- **Foreign Key Constraints**: Cascade delete untuk data integrity
+
+### 3. Transaction & Concurrency
+- **Database Transaction**: ACID compliance
+- **Pessimistic Locking**: `lockForUpdate()` untuk race condition
+- **Atomic Operations**: Semua operasi CUD dalam transaction
+
+### 4. Input Validation
+- **Server-side**: Laravel validation rules
+- **Client-side**: JavaScript validation sebelum submit
+- **CSRF Protection**: Token validation pada setiap POST request
+- **XSS Prevention**: Blade templating auto-escape output
+
+### 5. Business Logic Security
+- **Jam Kerja Validation**: Hardcoded 08:00-17:00
+- **Conflict Detection**: Universal overlap formula
+- **Ownership Check**: Policy-based authorization
+- **Time Validation**: Tidak boleh booking waktu lampau
+
+---
+
+## 🐛 Troubleshooting
+
+### Error: "Ruangan sudah dibooking pada waktu tersebut"
+
+**Penyebab:**
+- Ada reservasi lain di waktu yang sama atau overlap
+
+**Solusi:**
+1. Klik **"Lihat Jadwal Reservasi"** pada ruangan tersebut
+2. Periksa jadwal yang sudah ada
+3. Pilih waktu yang tidak konflik
+4. Pastikan waktu mulai dan selesai tidak overlap dengan reservasi lain
+
+---
+
+### Error: "Waktu mulai harus antara jam 08:00 - 17:00"
+
+**Penyebab:**
+- Waktu yang dipilih di luar jam kerja
+
+**Solusi:**
+- Pilih waktu mulai antara **08:00 - 16:59**
+- Pilih waktu selesai antara **08:01 - 17:00**
+- Pastikan reservasi dalam 1 hari (tidak lintas hari)
+
+---
+
+### Error: "This action is unauthorized"
+
+**Penyebab:**
+- Mencoba membatalkan reservasi orang lain
+
+**Solusi:**
+- Hanya bisa membatalkan reservasi sendiri
+- Cek di halaman **"Reservasi Saya"**
+- Pastikan Anda yang membuat reservasi tersebut
+
+---
+
+### Error: "Durasi reservasi minimal 30 menit"
+
+**Penyebab:**
+- Durasi terlalu pendek
+
+**Solusi:**
+- Pastikan durasi minimal 30 menit
+- Maksimal 8 jam per reservasi
 
