@@ -16,4 +16,19 @@ class RoomController extends Controller
         
         return view('dashboard', compact('rooms'));
     }
+
+    /**
+     * Display the specified room with its reservations.
+     */
+    public function show(Room $room)
+    {
+        // Ambil semua reservasi untuk room ini yang akan datang, diurutkan dari yang terdekat
+        $reservations = $room->reservations()
+            ->with('user')
+            ->where('end_time', '>=', now())
+            ->orderBy('start_time', 'asc')
+            ->get();
+
+        return view('rooms.show', compact('room', 'reservations'));
+    }
 }

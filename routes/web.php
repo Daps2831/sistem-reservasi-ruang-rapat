@@ -30,6 +30,9 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard - Daftar Ruang Rapat
     Route::get('/dashboard', [RoomController::class, 'index'])->name('dashboard');
     
+    // Room Detail
+    Route::get('/rooms/{room}', [RoomController::class, 'show'])->name('rooms.show');
+    
     // Reservations Routes
     Route::get('/reservations', [ReservationController::class, 'index'])->name('reservations.index');
     Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
