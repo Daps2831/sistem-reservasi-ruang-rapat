@@ -97,7 +97,7 @@
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         
         <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-            <form action="{{ route('reservations.store') }}" method="POST">
+            <form action="{{ route('reservations.store') }}" method="POST" id="reservationForm">
                 @csrf
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4" id="modal-title">
@@ -105,6 +105,11 @@
                     </h3>
                     
                     <input type="hidden" name="room_id" id="room_id">
+                    
+                    <!-- Error Messages Container -->
+                    <div id="validationErrors" class="hidden mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                        <ul id="errorList" class="list-disc list-inside text-sm"></ul>
+                    </div>
                     
                     <div class="space-y-4">
                         <!-- Start Time -->
@@ -153,6 +158,8 @@
         document.getElementById('room_id').value = roomId;
         document.getElementById('roomName').textContent = roomName;
         document.getElementById('reservationModal').classList.remove('hidden');
+        // Clear previous errors
+        hideValidationErrors();
     }
 
     function closeModal() {
@@ -160,6 +167,108 @@
         document.getElementById('start_time').value = '';
         document.getElementById('end_time').value = '';
         document.getElementById('notes').value = '';
+        hideValidationErrors();
+    }
+
+    function showValidationErrors(errors) {
+        const errorContainer = document.getElementById('validationErrors');
+        const errorList = document.getElementById('errorList');
+        
+        errorList.innerHTML = '';
+        errors.forEach(error => {
+            const li = document.createElement('li');
+            li.textContent = error;
+            errorList.appendChild(li);
+        });
+        
+        errorContainer.classList.remove('hidden');
+    }
+
+    function hideValidationErrors() {
+        const errorContainer = document.getElementById('validationErrors');
+        errorContainer.classList.add('hidden');
+        document.getElementById('errorList').innerHTML = '';
+    }
+
+    function validateTime(dateTimeString) {
+        const time = new Date(dateTimeString);
+        const hours = time.getHours();
+        const minutes = time.getMinutes();
+        
+        // Convert to minutes for easier comparison
+        const timeInMinutes = hours * 60 + minutes;
+        const workStartInMinutes = 8 * 60; // 08:00
+        const workEndInMinutes = 17 * 60; // 17:00
+        
+        return timeInMinutes >= workStartInMinutes && timeInMinutes < workEndInMinutes;
+    }
+
+    function validateReservationForm() {
+        const errors = [];
+        const startTime = document.getElementById('start_time').value;
+        const endTime = document.getElementById('end_time').value;
+        
+        // Validasi field tidak boleh kosong
+        if (!startTime) {
+            errors.push('Waktu mulai harus diisi.');
+        }
+        
+        if (!endTime) {
+            errors.push('Waktu selesai harus diisi.');
+        }
+        
+        if (errors.length > 0) {
+            showValidationErrors(errors);
+            return false;
+        }
+        
+        const start = new Date(startTime);
+        const end = new Date(endTime);
+        const now = new Date();
+        
+        // Validasi waktu mulai tidak boleh di masa lalu
+        if (start < now) {
+            errors.push('Waktu mulai tidak boleh di masa lampau.');
+        }
+        
+        // Validasi waktu selesai harus setelah waktu mulai
+        if (end <= start) {
+            errors.push('Waktu selesai harus setelah waktu mulai.');
+        }
+        
+        // Validasi durasi minimum (contoh: minimal 30 menit)
+        const durationInMinutes = (end - start) / (1000 * 60);
+        if (durationInMinutes < 30) {
+            errors.push('Durasi reservasi minimal 30 menit.');
+        }
+        
+        // Validasi durasi maksimum (contoh: maksimal 8 jam)
+        if (durationInMinutes > 480) {
+            errors.push('Durasi reservasi maksimal 8 jam.');
+        }
+        
+        // Validasi jam kerja untuk waktu mulai
+        if (!validateTime(startTime)) {
+            errors.push('Waktu mulai harus antara jam 08:00 - 17:00.');
+        }
+        
+        // Validasi jam kerja untuk waktu selesai
+        if (!validateTime(endTime)) {
+            errors.push('Waktu selesai harus antara jam 08:00 - 17:00.');
+        }
+        
+        // Validasi harus di hari yang sama
+        if (start.toDateString() !== end.toDateString()) {
+            errors.push('Reservasi harus dalam hari yang sama.');
+        }
+        
+        if (errors.length > 0) {
+            showValidationErrors(errors);
+            return false;
+        }
+        
+        hideValidationErrors();
+        return true;
     }
 
     // Set minimum datetime to now
@@ -169,6 +278,28 @@
         const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
         document.getElementById('start_time').min = localISOTime;
         document.getElementById('end_time').min = localISOTime;
+        
+        // Add form submit validation
+        const form = document.getElementById('reservationForm');
+        form.addEventListener('submit', function(e) {
+            if (!validateReservationForm()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+        
+        // Real-time validation on input change
+        document.getElementById('start_time').addEventListener('change', function() {
+            if (this.value && document.getElementById('end_time').value) {
+                validateReservationForm();
+            }
+        });
+        
+        document.getElementById('end_time').addEventListener('change', function() {
+            if (this.value && document.getElementById('start_time').value) {
+                validateReservationForm();
+            }
+        });
     });
 </script>
 @endsection
