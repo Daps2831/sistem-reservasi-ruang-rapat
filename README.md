@@ -403,22 +403,22 @@ dengan berbagai macam kapasitas
 ### Dashboard - Daftar Ruang Rapat
 Halaman utama yang menampilkan semua ruang rapat yang tersedia dengan informasi kapasitas dan jumlah reservasi. User dapat langsung membuat reservasi atau melihat jadwal detail.
 
-![Dashboard](screenshots/dashboard.png)
+![Dashboard](dokumentasi-dashboard.png)
 
 ### Modal Form Reservasi
 Form untuk membuat reservasi baru dengan validasi real-time. Sistem akan otomatis memvalidasi jam kerja (08:00-17:00) dan mencegah konflik jadwal.
 
-![Modal Reservasi](screenshots/modal-reservasi.png)
+![Modal Reservasi](dokumentasi-buat-reservasi.png)
 
 ### Detail Ruang Rapat - Jadwal Reservasi
 Halaman detail menampilkan semua jadwal reservasi yang sudah terbooking, dikelompokkan per tanggal. User dapat melihat siapa yang booking dan jam berapa saja.
 
-![Detail Room](screenshots/detail-room.png)
+![Detail Room](dokumentasi-jadwal.png)
 
 ### Riwayat Reservasi Pribadi
 Halaman yang menampilkan semua reservasi yang telah dibuat oleh user yang sedang login, dengan opsi untuk membatalkan reservasi yang akan datang.
 
-![Riwayat Reservasi](screenshots/riwayat-reservasi.png)
+![Riwayat Reservasi](dokumentasi-riwayat.png)
 
 ---
 
